@@ -1,0 +1,99 @@
+﻿@model IEnumerable<base_test_mvc.Models.User>
+
+@{
+    ViewData["Title"] = "Utilisateurs";
+}
+
+<h2>Liste des utilisateurs</h2>
+<p>
+    <a asp-action="AddRandom"><button>Gérérer un utilisateur</button></a>
+    <a asp-area="" asp-controller="Users" asp-action="Add"><button>Ajouter un utilisateur</button></a>
+</p>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Identifiant
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.createdAt)
+            </th>
+            <th>
+                Date de dernière modification
+            </th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.login)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.createdAt)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.updatedAt)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.login">Modifier</a> 
+                    <a href="#" class="details" model-id="@item.login">Détails</a> 
+                    <a href="#" class="delete" model-id="@item.login">Supprimer</a> 
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div id="details-modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Détails de l'utilisateur</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function() {
+            $(".details").on("click", event => {
+                $.ajax(`/Users/Details/${event.target.getAttribute("model-id")}`).done(data => {
+                    $('#details-modal .modal-body').html(`
+                        <p>Identifiant: ${data.login}</p>
+                        <p>Nom: ${data.lastname}</p>
+                        <p>Prénom: ${data.firstname}</p>
+                        <p>Date de création: ${data.createdAt}</p>
+                        <p>Date de dernière modification: ${data.updatedAt}</p>
+                    `);
+                    $('#details-modal').modal("show");
+                });
+            });
+            $(".delete").on("click", event => {
+                if(confirm(`Êtes-vous sûr de vouloir supprimer cet utilisateur? (${event.target.getAttribute("model-id")})`)){
+                    $.ajax({
+                        url: `/Users/Delete/${event.target.getAttribute("model-id")}`,
+                        method: "POST"
+                    }).done(data => {
+                        if(data==="ok"){
+                            $(event.target).closest("tr").remove();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

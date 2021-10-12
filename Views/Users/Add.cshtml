@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Ajout d'un utilisateur";
+}
+
+<form id="user_form" action="/Users/Add" method="post">
+    <div class="form-horizontal">
+        <h4>Utilisateur</h4>
+        <hr />
+        <div class="text-danger" />
+        <div class="form-group">
+            <label class="control-label col-md-2" for="login">Identifiant *</label>
+            <div class="col-md-10">
+                <input data-val="true" id="login" name="login" value="" required/>
+                <span id="login-result"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="firstname">Prénom</label>
+            <div class="col-md-10">
+                <input data-val="true" id="firstname" name="firstname" value="" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="lastname">Nom</label>
+            <div class="col-md-10">
+                <input data-val="true" id="lastname" name="lastname" value="" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="lastname">Mot de passe *</label>
+            <div class="col-md-10">
+                <input class="password" type="password" data-val="true" id="password" name="password" value=""  required/>
+                <span id="password-result"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2" for="lastname">Confirmer Mot de passe *</label>
+            <div class="col-md-10">
+                <input class="password" type="password" data-val="true" id="confirm" name="confirm" value="" required/>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input id="submit" type="submit" value="Enregistrer" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function(){
+            let login_ok=false;
+            let password_ok=false;
+            let confirm_ok=false;
+            $("#login").on("change", event => {
+                console.log(event.target.value);
+                if(event.target.value){
+                    $.ajax({
+                        url: `/Users/CheckUsername`,
+                        method: "POST",
+                        data: {"login": event.target.value}
+                    }).done(data => {
+                        console.log(data);
+                        if(data==="not unique"){
+                            $("#login-result").html('Cet identifiant n\'est pas disponible');
+                            $(event.target).css("background-color", "red");
+                            $(event.target).css("opacity", "0.5");
+                            login_ok=false;
+                        } else {
+                            $("#login-result").html('');
+                            $(event.target).css("background-color", "");
+                            $(event.target).css("opacity", "");
+                            login_ok=true;
+                        }
+                    });
+                }
+            });
+            $("#password").on("change", event => {
+                let value = event.target.value;
+                if(value.match(/([a-zA-Z])/) && value.match(/([0-9])/) && value.match(/([!,%,&,@@,#,$,^,*,?,_,~])/)){
+                    $("#password-result").html('');
+                    $("#password").css("background-color", "");
+                    $("#password").css("opacity", "");
+                    password_ok=true;
+                } else {
+                    $("#password-result").html('Le mot de passe doit contenir au moins une majuscule, un chiffre et un caractère spécial');
+                    $("#password").css("background-color", "red");
+                    $("#password").css("opacity", "0.5");
+                    password_ok=false;
+                }
+            });
+            $(".password").on("change", event => {
+                if($("#confirm").val()!=$("#password").val()){
+                    $("#confirm").css("background-color", "red");
+                    $("#confirm").css("opacity", "0.5");
+                    confirm_ok=false;
+                } else {
+                    $("#confirm").css("background-color", "");
+                    $("#confirm").css("opacity", "");
+                    confirm_ok=true;
+                }
+            });
+
+            $("#user_form").submit(event => {
+                if(login_ok && password_ok && confirm_ok){
+                    return true;
+                }
+                return false;
+            });
+
+        });
+    </script>
+}
